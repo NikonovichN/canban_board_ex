@@ -1,1 +1,1 @@
-export 'presentation/ui/test_widget.dart';
+export 'presentation/ui/cubit_wrapper.dart';
