@@ -26,6 +26,18 @@ class KanbanRepositoryImpl implements KanbanRepository {
       return const Left(_errorMessage);
     }
   }
+
+  @override
+  Future<Either<String, List<TaskEntity>>> updateTasks(PostKanbanParams params) async {
+    try {
+      final result = await _dataSource.updateTasks(params);
+      final decoded = jsonDecode(result.body);
+
+      return Right(ListTasks.fromJson(decoded['DATA']).toListEntity);
+    } catch (error) {
+      return const Left(_errorMessage);
+    }
+  }
 }
 
 extension on ListTasks {

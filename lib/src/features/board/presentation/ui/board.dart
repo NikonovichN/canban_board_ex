@@ -15,13 +15,29 @@ class Board extends StatefulWidget {
 }
 
 class _BoardState extends State<Board> {
-  AppFlowyBoardController boardController = AppFlowyBoardController();
+  static const _boardMargin = EdgeInsets.symmetric(horizontal: 12);
+
+  late AppFlowyBoardController boardController;
   AppFlowyBoardScrollController boardScrollController = AppFlowyBoardScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    boardController = AppFlowyBoardController(
+        onMoveGroupItem: _onMoveGroupItem, onMoveGroupItemToGroup: _onMoveGroupItemToGroup);
+  }
+
+  void _onMoveGroupItem(String groupId, int fromIndex, int toIndex) {
+    context.read<TasksCubit>().updateTasks(groupId, fromIndex);
+  }
+
+  void _onMoveGroupItemToGroup(String fromGroupId, int fromIndex, String toGroupId, int toIndex) {
+    context.read<TasksCubit>().updateTasks(fromGroupId, toIndex);
+  }
 
   @override
   void dispose() {
     boardController.dispose();
-
     super.dispose();
   }
 
@@ -33,114 +49,82 @@ class _BoardState extends State<Board> {
         state as TasksLoaded;
         state.groupedTasks.forEach((key, value) {
           var group = AppFlowyGroupData(
-            id: key.toString(),
-            name: key.toString(),
-            items: value.map(
-              (e) {
-                final encodedLatin1 = const Latin1Codec().encode(e.name);
-                return TextItem(utf8.decode(encodedLatin1));
-              },
-            ).toList(),
-          );
+              id: key.toString(),
+              name: key.toString(),
+              items: List<AppFlowyGroupItem>.from(
+                value.map(
+                  (e) {
+                    final encodedLatin1 = const Latin1Codec().encode(e.name);
+                    return _TextItem(utf8.decode(encodedLatin1));
+                  },
+                ).toList(),
+              ));
 
           boardController.addGroup(group);
         });
 
-        final config = AppFlowyBoardConfig(
-          groupBackgroundColor: HexColor.fromHex('#F7F8FC'),
-          stretchGroupHeight: false,
-        );
-
         return AppFlowyBoard(
-            controller: boardController,
-            cardBuilder: (context, group, groupItem) {
-              return AppFlowyGroupCard(
-                key: ValueKey(groupItem.id),
-                child: _buildCard(groupItem),
-              );
-            },
-            boardScrollController: boardScrollController,
-            footerBuilder: (context, columnData) {
-              return AppFlowyGroupFooter(
-                icon: const Icon(Icons.add, size: 20),
-                title: const Text('New'),
-                height: 50,
-                margin: config.groupBodyPadding,
-                onAddButtonClick: () {
-                  boardScrollController.scrollToBottom(columnData.id);
-                },
-              );
-            },
-            headerBuilder: (context, columnData) {
-              return AppFlowyGroupHeader(
-                icon: const Icon(Icons.lightbulb_circle),
-                title: SizedBox(
-                  width: 60,
-                  child: TextField(
-                    controller: TextEditingController()..text = columnData.headerData.groupName,
-                    onSubmitted: (val) {
-                      boardController
-                          .getGroupController(columnData.headerData.groupId)!
-                          .updateGroupName(val);
-                    },
-                  ),
+          controller: boardController,
+          groupConstraints: const BoxConstraints.tightFor(width: 240),
+          cardBuilder: (context, group, groupItem) {
+            return AppFlowyGroupCard(
+              key: ValueKey(groupItem.id),
+              child: groupItem is _TextItem ? _CardItem(item: groupItem) : null,
+            );
+          },
+          boardScrollController: boardScrollController,
+          headerBuilder: (context, columnData) {
+            return AppFlowyGroupHeader(
+              icon: const Icon(Icons.lightbulb_circle),
+              title: SizedBox(
+                width: 60,
+                child: TextField(
+                  controller: TextEditingController()..text = columnData.headerData.groupName,
+                  onSubmitted: (val) {
+                    boardController
+                        .getGroupController(columnData.headerData.groupId)!
+                        .updateGroupName(val);
+                  },
                 ),
-                addIcon: const Icon(Icons.add, size: 20),
-                moreIcon: const Icon(Icons.more_horiz, size: 20),
-                height: 50,
-                margin: config.groupBodyPadding,
-              );
-            },
-            groupConstraints: const BoxConstraints.tightFor(width: 240),
-            config: config);
+              ),
+              margin: _boardMargin,
+            );
+          },
+          footerBuilder: (_, __) => const SizedBox(height: 20),
+          config: const AppFlowyBoardConfig(
+            groupBackgroundColor: Colors.black12,
+            stretchGroupHeight: false,
+          ),
+        );
       },
     );
   }
-
-  Widget _buildCard(AppFlowyGroupItem item) {
-    if (item is TextItem) {
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-          child: Text(item.s),
-        ),
-      );
-    }
-
-    throw UnimplementedError();
-  }
 }
 
-class _RowWidget extends StatelessWidget {
-  final TextItem item;
-  const _RowWidget({Key? key, required this.item}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      key: ObjectKey(item),
-      height: 60,
-      color: Colors.green,
-      child: Center(child: Text(item.s)),
-    );
-  }
-}
-
-class TextItem extends AppFlowyGroupItem {
+class _TextItem extends AppFlowyGroupItem {
   final String s;
 
-  TextItem(this.s);
+  _TextItem(this.s);
 
   @override
   String get id => s;
 }
 
-extension HexColor on Color {
-  static Color fromHex(String hexString) {
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
+class _CardItem extends StatelessWidget {
+  static const _padding = EdgeInsets.symmetric(horizontal: 20, vertical: 30);
+
+  final _TextItem item;
+
+  const _CardItem({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: _padding,
+        child: Text(item.s),
+      ),
+    );
   }
 }
