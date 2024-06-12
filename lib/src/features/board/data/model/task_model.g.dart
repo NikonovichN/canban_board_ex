@@ -7,13 +7,13 @@ part of 'task_model.dart';
 // **************************************************************************
 
 ListTasks _$ListTasksFromJson(Map<String, dynamic> json) => ListTasks(
-      tasks: (json['tasks'] as List<dynamic>)
+      tasks: (json['rows'] as List<dynamic>)
           .map((e) => TaskModelV1.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
 Map<String, dynamic> _$ListTasksToJson(ListTasks instance) => <String, dynamic>{
-      'tasks': instance.tasks,
+      'rows': instance.tasks,
     };
 
 TaskModelV1 _$TaskModelV1FromJson(Map<String, dynamic> json) => TaskModelV1(

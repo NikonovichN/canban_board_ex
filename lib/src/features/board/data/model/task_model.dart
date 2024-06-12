@@ -4,6 +4,7 @@ part 'task_model.g.dart';
 
 @JsonSerializable()
 class ListTasks {
+  @JsonKey(name: 'rows')
   final List<TaskModelV1> tasks;
   const ListTasks({required this.tasks});
 
