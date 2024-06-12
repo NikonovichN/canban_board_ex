@@ -17,13 +17,27 @@ class Board extends StatefulWidget {
 class _BoardState extends State<Board> {
   static const _boardMargin = EdgeInsets.symmetric(horizontal: 12);
 
-  AppFlowyBoardController boardController = AppFlowyBoardController();
+  late AppFlowyBoardController boardController;
   AppFlowyBoardScrollController boardScrollController = AppFlowyBoardScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    boardController = AppFlowyBoardController(
+        onMoveGroupItem: _onMoveGroupItem, onMoveGroupItemToGroup: _onMoveGroupItemToGroup);
+  }
+
+  void _onMoveGroupItem(String groupId, int fromIndex, int toIndex) {
+    context.read<TasksCubit>().updateTasks(groupId, fromIndex);
+  }
+
+  void _onMoveGroupItemToGroup(String fromGroupId, int fromIndex, String toGroupId, int toIndex) {
+    context.read<TasksCubit>().updateTasks(fromGroupId, toIndex);
+  }
 
   @override
   void dispose() {
     boardController.dispose();
-
     super.dispose();
   }
 
@@ -51,6 +65,7 @@ class _BoardState extends State<Board> {
 
         return AppFlowyBoard(
           controller: boardController,
+          groupConstraints: const BoxConstraints.tightFor(width: 240),
           cardBuilder: (context, group, groupItem) {
             return AppFlowyGroupCard(
               key: ValueKey(groupItem.id),
@@ -58,17 +73,6 @@ class _BoardState extends State<Board> {
             );
           },
           boardScrollController: boardScrollController,
-          footerBuilder: (context, columnData) {
-            return AppFlowyGroupFooter(
-              icon: const Icon(Icons.add, size: 20),
-              title: const Text('New'),
-              height: 50,
-              margin: _boardMargin,
-              onAddButtonClick: () {
-                boardScrollController.scrollToBottom(columnData.id);
-              },
-            );
-          },
           headerBuilder: (context, columnData) {
             return AppFlowyGroupHeader(
               icon: const Icon(Icons.lightbulb_circle),
@@ -83,13 +87,10 @@ class _BoardState extends State<Board> {
                   },
                 ),
               ),
-              addIcon: const Icon(Icons.add, size: 20),
-              moreIcon: const Icon(Icons.more_horiz, size: 20),
-              height: 50,
               margin: _boardMargin,
             );
           },
-          groupConstraints: const BoxConstraints.tightFor(width: 240),
+          footerBuilder: (_, __) => const SizedBox(height: 20),
           config: const AppFlowyBoardConfig(
             groupBackgroundColor: Colors.black12,
             stretchGroupHeight: false,

@@ -40,3 +40,23 @@ class FetchKanbanParams {
     required this.authUserId,
   });
 }
+
+class PostKanbanParams {
+  final String periodStart;
+  final String periodEnd;
+  final String periodKey;
+  final int indicatorToMoId;
+  final String fieldName;
+  final int fieldValue;
+  final int authUserId;
+
+  const PostKanbanParams({
+    required this.periodStart,
+    required this.periodEnd,
+    required this.periodKey,
+    required this.indicatorToMoId,
+    required this.fieldName,
+    required this.fieldValue,
+    required this.authUserId,
+  });
+}

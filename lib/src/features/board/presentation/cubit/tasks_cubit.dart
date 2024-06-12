@@ -31,4 +31,22 @@ class TasksCubit extends Cubit<TasksState> {
       (right) => emit(TasksLoaded(data: right)),
     );
   }
+
+  Future<void> updateTasks(String parentId, int indicatorToMoId) async {
+    emit(TasksLoading());
+    final response = await repository.updateTasks(PostKanbanParams(
+      periodStart: '2024-05-01',
+      periodEnd: '2024-05-31',
+      periodKey: 'month',
+      indicatorToMoId: indicatorToMoId,
+      fieldName: parentId,
+      fieldValue: 311841,
+      authUserId: 2,
+    ));
+
+    response.fold(
+      (left) => emit(TasksError()),
+      (right) => emit(TasksLoaded(data: right)),
+    );
+  }
 }
