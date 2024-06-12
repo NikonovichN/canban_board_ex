@@ -33,15 +33,16 @@ class _BoardState extends State<Board> {
         state as TasksLoaded;
         state.groupedTasks.forEach((key, value) {
           var group = AppFlowyGroupData(
-            id: key.toString(),
-            name: key.toString(),
-            items: value.map(
-              (e) {
-                final encodedLatin1 = const Latin1Codec().encode(e.name);
-                return TextItem(utf8.decode(encodedLatin1));
-              },
-            ).toList(),
-          );
+              id: key.toString(),
+              name: key.toString(),
+              items: List<AppFlowyGroupItem>.from(
+                value.map(
+                  (e) {
+                    final encodedLatin1 = const Latin1Codec().encode(e.name);
+                    return TextItem(utf8.decode(encodedLatin1));
+                  },
+                ).toList(),
+              ));
 
           boardController.addGroup(group);
         });
@@ -109,21 +110,6 @@ class _BoardState extends State<Board> {
     }
 
     throw UnimplementedError();
-  }
-}
-
-class _RowWidget extends StatelessWidget {
-  final TextItem item;
-  const _RowWidget({Key? key, required this.item}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      key: ObjectKey(item),
-      height: 60,
-      color: Colors.green,
-      child: Center(child: Text(item.s)),
-    );
   }
 }
 
